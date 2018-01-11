@@ -1,0 +1,188 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+
+void split(const char *in_fname, const char *out_even_fname, const char *out_odd_fname)
+{
+	int c;
+	FILE *fin, *fout_odd, *fout_even;
+	fin = fopen(in_fname, "rb");
+	if (!fin)
+	{
+		fprintf(stderr, "Couldn't open %s.\n", in_fname);
+		return;
+	}
+	fout_odd = fopen(out_odd_fname, "wb");
+	if (!fout_odd)
+	{
+		fprintf(stderr, "Couldn't open %s.\n", out_odd_fname);
+		fclose(fin);
+		return;
+	}
+	fout_even = fopen(out_even_fname, "wb");
+	if (!fout_even)
+	{
+		fprintf(stderr, "Couldn't open %s.\n", out_even_fname);
+		fclose(fin);
+		fclose(fout_odd);
+		return;
+	}
+
+	do
+	{
+		c = fgetc(fin);
+		if (feof(fin))
+		{
+			break;
+		}
+		fputc(c, fout_even);
+		c = fgetc(fin);
+		if (feof(fin))
+		{
+			break;
+		}
+		fputc(c, fout_odd);
+	}
+	while (c != EOF);
+
+	fclose(fin);
+	fclose(fout_odd);
+	fclose(fout_even);
+}
+
+void combine(const char *in_even_fname, const char *in_odd_fname, const char *out_fname)
+{
+	int c;
+	FILE *fin_odd, *fin_even, *fout;
+	fout = fopen(out_fname, "wb");
+	if (!fout)
+	{
+		fprintf(stderr, "Couldn't open %s.\n", out_fname);
+		return;
+	}
+	fin_even = fopen(in_even_fname, "rb");
+	if (!fin_even)
+	{
+		fprintf(stderr, "Couldn't open %s.\n", in_even_fname);
+		fclose(fout);
+		return;
+	}
+	fin_odd = fopen(in_odd_fname, "rb");
+	if (!fin_odd)
+	{
+		fprintf(stderr, "Couldn't open %s.\n", in_odd_fname);
+		fclose(fin_even);
+		fclose(fout);
+		return;
+	}
+
+	do
+	{
+		c = fgetc(fin_even);
+		if (c != EOF)
+		{
+			fputc(c, fout);
+		}
+		c = fgetc(fin_odd);
+		if (c != EOF)
+		{
+			fputc(c, fout);
+		}
+	} while (c != EOF);
+
+	fclose(fout);
+	fclose(fin_even);
+	fclose(fin_odd);
+}
+
+void exchange(const char *in_fname, const char *out_fname)
+{
+	int c;
+	uint8_t byte[2];
+	FILE *fin, *fout;
+	fout = fopen(out_fname, "wb");
+	if (!fout)
+	{
+		fprintf(stderr, "Couldn't open %s.\n", out_fname);
+		return;
+	}
+	fin = fopen(in_fname, "rb");
+	if (!fin)
+	{
+		fprintf(stderr, "Couldn't open %s.\n", in_fname);
+		fclose(fout);
+		return;
+	}
+
+	do
+	{
+		c = fgetc(fin);
+		if (c == EOF)
+		{
+			break;
+		}
+		byte[0] = c;
+		c = fgetc(fin);
+		if (c == EOF)
+		{
+			break;
+		}
+		byte[1] = c;
+
+		fputc(byte[1], fout);
+		fputc(byte[0], fout);
+	} while (c != EOF);
+
+	fclose(fout);
+	fclose(fin);
+}
+
+void usage(const char *name)
+{
+	printf("Usage: %s [op]\n", name);
+	printf("    split: s in out.even out.odd\n");
+	printf("  combine: c in.even in.odd out\n");
+	printf(" exchange: x in out\n");
+}
+
+int main(int argc, char **argv)
+{
+	if (argc < 2)
+	{
+		usage(argv[0]);
+		return 0;
+	}
+
+	if (argv[1][0] == 's')
+	{
+		if (argc < 5)
+		{
+			usage(argv[0]);
+			return 0;
+		}
+		printf("Splitting\n");
+		split(argv[2], argv[3], argv[4]);
+	}
+	else if (argv[1][0] == 'c')
+	{
+		if (argc < 5)
+		{
+			usage(argv[0]);
+			return 0;
+		}
+		printf("Combining\n");
+		combine(argv[2], argv[3], argv[4]);
+	}
+	else if (argv[1][0] == 'x')
+	{
+		if (argc < 4)
+		{
+			usage(argv[0]);
+			return 0;
+		}
+		printf("Exchanging bytes\n");
+		exchange(argv[2], argv[3]);
+	}
+
+	return 0;
+}
