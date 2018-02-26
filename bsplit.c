@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-void split(const char *in_fname, const char *out_even_fname, const char *out_odd_fname)
+void split(const char *in_fname, const char *out_even_fname, const char *out_odd_fname, int bytes)
 {
 	int c;
 	FILE *fin, *fout_odd, *fout_even;
@@ -30,27 +30,33 @@ void split(const char *in_fname, const char *out_even_fname, const char *out_odd
 
 	do
 	{
-		c = fgetc(fin);
-		if (feof(fin))
+		for (int i = 0; i < bytes; i++)
 		{
-			break;
+			c = fgetc(fin);
+			if (feof(fin))
+			{
+				goto done;
+			}
+			fputc(c, fout_even);
 		}
-		fputc(c, fout_even);
-		c = fgetc(fin);
-		if (feof(fin))
+		for (int i = 0; i < bytes; i++)
 		{
-			break;
+			c = fgetc(fin);
+			if (feof(fin))
+			{
+				goto done;
+			}
+			fputc(c, fout_odd);
 		}
-		fputc(c, fout_odd);
 	}
 	while (c != EOF);
-
+done:
 	fclose(fin);
 	fclose(fout_odd);
 	fclose(fout_even);
 }
 
-void combine(const char *in_even_fname, const char *in_odd_fname, const char *out_fname)
+void combine(const char *in_even_fname, const char *in_odd_fname, const char *out_fname, int bytes)
 {
 	int c;
 	FILE *fin_odd, *fin_even, *fout;
@@ -78,15 +84,22 @@ void combine(const char *in_even_fname, const char *in_odd_fname, const char *ou
 
 	do
 	{
-		c = fgetc(fin_even);
-		if (c != EOF)
+		for (int i = 0; i < bytes; i++)
 		{
-			fputc(c, fout);
+			c = fgetc(fin_even);
+			if (c != EOF)
+			{
+				fputc(c, fout);
+			}
 		}
-		c = fgetc(fin_odd);
-		if (c != EOF)
+
+		for (int i = 0; i < bytes; i++)
 		{
-			fputc(c, fout);
+			c = fgetc(fin_odd);
+			if (c != EOF)
+			{
+				fputc(c, fout);
+			}
 		}
 	} while (c != EOF);
 
@@ -140,8 +153,8 @@ void exchange(const char *in_fname, const char *out_fname)
 void usage(const char *name)
 {
 	printf("Usage: %s [op]\n", name);
-	printf("    split: s in out.even out.odd\n");
-	printf("  combine: c in.even in.odd out\n");
+	printf("    split: s in out.even out.odd <bytes per>\n");
+	printf("  combine: c in.even in.odd out <bytes per>\n");
 	printf(" exchange: x in out\n");
 }
 
@@ -153,6 +166,14 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
+	int bytes = 1;
+
+	if (argc > 5)
+	{
+		bytes = atoi(argv[5]);
+		printf("Using %d bytes interleave cadence\n", bytes);
+	}
+
 	if (argv[1][0] == 's')
 	{
 		if (argc < 5)
@@ -161,7 +182,7 @@ int main(int argc, char **argv)
 			return 0;
 		}
 		printf("Splitting\n");
-		split(argv[2], argv[3], argv[4]);
+		split(argv[2], argv[3], argv[4], bytes);
 	}
 	else if (argv[1][0] == 'c')
 	{
@@ -171,7 +192,7 @@ int main(int argc, char **argv)
 			return 0;
 		}
 		printf("Combining\n");
-		combine(argv[2], argv[3], argv[4]);
+		combine(argv[2], argv[3], argv[4], bytes);
 	}
 	else if (argv[1][0] == 'x')
 	{
