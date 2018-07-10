@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 	}
 
 	// Write const array to C file
-	fprintf(fout, "#include <stdint.h>\nconst uint8_t %s =\n{",
+	fprintf(fout, "#include <stdint.h>\nconst uint8_t %s[] =\n{",
 	        symbol_name);
 
 	while (!feof(fin))
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 
 	fprintf(fout, "#ifndef _BIN_%s_H\n#define _BIN_%s_H\n", symbol_name, symbol_name);
 	fprintf(fout, "#include <stdint.h>\n");
-	fprintf(fout, "extern const uint8_t %s;\n", symbol_name);
+	fprintf(fout, "extern const uint8_t %s[];\n", symbol_name);
 	fprintf(fout, "#endif // _BIN_%s_H\n", symbol_name);
 	fclose(fout);
 
