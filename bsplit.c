@@ -153,6 +153,38 @@ void exchange(const char *in_fname, const char *out_fname)
 void exchange_nybbles(const char *in_fname, const char *out_fname)
 {
 	int c;
+	FILE *fin, *fout;
+	fout = fopen(out_fname, "wb");
+	if (!fout)
+	{
+		fprintf(stderr, "Couldn't open %s.\n", out_fname);
+		return;
+	}
+	fin = fopen(in_fname, "rb");
+	if (!fin)
+	{
+		fprintf(stderr, "Couldn't open %s.\n", in_fname);
+		fclose(fout);
+		return;
+	}
+
+	do
+	{
+		c = fgetc(fin);
+		if (c == EOF)
+		{
+			break;
+		}
+		fputc(((c & 0xF) << 4) | ((c & 0xF0) >> 4), fout);
+	} while (c != EOF);
+
+	fclose(fout);
+	fclose(fin);
+}
+
+void exchange_halfnybbles(const char *in_fname, const char *out_fname)
+{
+	int c;
 	uint8_t byte;
 	FILE *fin, *fout;
 	fout = fopen(out_fname, "wb");
@@ -177,9 +209,9 @@ void exchange_nybbles(const char *in_fname, const char *out_fname)
 			break;
 		}
 		byte = c;
-		c = ((byte & 0xF) << 4) | ((byte & 0xF0) >> 4);
+		c = ((byte & 0x03) << 2) | ((byte & 0x0C) >> 2) | (((byte & 0x30) << 2) | ((byte & 0xC0) >> 2));
 
-		fputc(byte, fout);
+		fputc(c, fout);
 	} while (c != EOF);
 
 	fclose(fout);
@@ -192,7 +224,8 @@ void usage(const char *name)
 	printf("    split: s in out.even out.odd <bytes per>\n");
 	printf("  combine: c in.even in.odd out <bytes per>\n");
 	printf(" exchange: x in out\n");
-	printf(" ex. nybl: n in out\n");
+	printf(" ex. 4bit: n in out\n");
+	printf(" ex. 2bit: z in out\n");
 }
 
 int main(int argc, char **argv)
@@ -250,6 +283,16 @@ int main(int argc, char **argv)
 		}
 		printf("Exchanging nybbles\n");
 		exchange_nybbles(argv[2], argv[3]);
+	}
+	else if (argv[1][0] == 'z')
+	{
+		if (argc < 4)
+		{
+			usage(argv[0]);
+			return 0;
+		}
+		printf("Exchanging half-nybbles\n");
+		exchange_halfnybbles(argv[2], argv[3]);
 	}
 
 	return 0;
