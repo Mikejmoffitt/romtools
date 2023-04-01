@@ -4,7 +4,8 @@ TOOLS := \
 	bsplit \
 	binvert \
 	binclude \
-	bscoop
+	bscoop \
+	wavlooper
 
 all:
 	for dir in $(TOOLS); do \
