@@ -2,6 +2,7 @@
 
 TOOLS := \
 	bsplit \
+	bsplat \
 	binvert \
 	binclude \
 	bscoop \
