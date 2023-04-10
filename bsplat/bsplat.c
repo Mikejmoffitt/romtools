@@ -51,9 +51,12 @@ int main(int argc, char **argv)
 	const size_t fs_size = ftell(fs);
 	fseek(fs, 0, SEEK_SET);
 
+	printf("Base file: %ld ($%lX) bytes.\n", fi_size, fi_size);
+	printf("Overlay: %ld ($%lX) bytes @ $%lX.\n", fs_size, fs_size, offset);
+
 	if (offset >= fi_size)
 	{
-		printf("Warning: Overlay data begins outsize original size.\n");
+		printf("Warning: Overlay data begins outside original size.\n");
 		fclose(fi);
 		fclose(fs);
 		fclose(fo);
