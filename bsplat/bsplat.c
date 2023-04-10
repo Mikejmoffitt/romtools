@@ -44,21 +44,40 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+	fseek(fi, 0, SEEK_END);
+	const size_t fi_size = ftell(fi);
+	fseek(fi, 0, SEEK_SET);
+	fseek(fs, 0, SEEK_END);
+	const size_t fs_size = ftell(fs);
+	fseek(fs, 0, SEEK_SET);
+
+	if (offset >= fi_size)
+	{
+		printf("Warning: Overlay data begins outsize original size.\n");
+		fclose(fi);
+		fclose(fs);
+		fclose(fo);
+		return 1;
+	}
+	if (offset + fs_size >= fi_size)
+	{
+		printf("Warning: Overlay data overruns original size.\n");
+		fclose(fi);
+		fclose(fs);
+		fclose(fo);
+		return 1;
+	}
+
 	for (size_t i = 0; i < offset; i++)
 	{
-		// TODO: This is stupid and slow; should just ftell to get the file
-		//       size and abort if too small
-		if (feof(fi)) break;
 		fputc(fgetc(fi), fo);
 	}
-
-	while (!feof(fs))
+	for (size_t i = 0; i < fs_size; i++)
 	{
 		fputc(fgetc(fs), fo);
-		(void)fgetc(fi);
 	}
-
-	while (!feof(fi))
+	fseek(fi, offset + fs_size, SEEK_SET);
+	for (size_t i = 0; i < fi_size - (offset + fs_size); i++)
 	{
 		fputc(fgetc(fi), fo);
 	}
