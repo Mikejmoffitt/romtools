@@ -1,3 +1,10 @@
+// I wrote this when messing around with CPS1 a while ago. This predates
+// the other rom tools in this repo and is likely obsolete; a short script
+// and use of bsplit can probably do everything this crummy tool does.
+//
+// This is in the weird-tools directory for a reason, so please do not regard
+// it as anything but a janky little tool that you do not need.
+
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>

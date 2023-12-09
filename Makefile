@@ -6,6 +6,7 @@ TOOLS := \
 	binvert \
 	binclude \
 	bscoop \
+	binpad \
 	wavlooper
 
 all:
