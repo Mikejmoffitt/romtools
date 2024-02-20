@@ -32,6 +32,8 @@ int main(int argc, char **argv)
 
 	fseek(f, 0, SEEK_END);
 	const size_t original_size = ftell(f);
+	printf("Original filesize is $%X (%lu) bytes.\n",
+	       (int)original_size, original_size);
 	size_t next_size = 1;
 	do
 	{
@@ -39,7 +41,10 @@ int main(int argc, char **argv)
 	} while (next_size < original_size);
 
 	if (next_size < min_bytes) next_size = min_bytes;
-	
+
+	printf("New target size of $%X (%lu) bytes.\n",
+	       (int)next_size, next_size);
+
 	for (size_t i = 0; i < next_size - original_size; i++)
 	{
 		fputc(pad_value, f);
