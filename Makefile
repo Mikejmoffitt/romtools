@@ -7,6 +7,7 @@ TOOLS := \
 	binclude \
 	bscoop \
 	binpad \
+	namcosum \
 	wavlooper
 
 all:
